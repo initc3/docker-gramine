@@ -1,4 +1,5 @@
-FROM ubuntu:20.04
+#FROM ubuntu:20.04
+FROM initc3/linux-sgx:2.14-ubuntu20.04
 
 RUN apt-get update && apt-get install --yes \
             autoconf \
@@ -8,6 +9,7 @@ RUN apt-get update && apt-get install --yes \
             git \
             libcurl4-openssl-dev \
             libprotobuf-c-dev \
+            libunwind-dev \
             ninja-build \
             protobuf-c-compiler \
             python3 \
@@ -20,9 +22,11 @@ RUN git clone --branch v1.0 https://github.com/gramineproject/gramine.git /usr/s
 
 WORKDIR /usr/src/gramine
 
-ARG SGX=enabled
+RUN meson setup build/ \
+            --buildtype=release \
+            -Ddirect=disabled \
+            -Dsgx=${SGX} \
 
-RUN meson setup build/ --buildtype=release -Ddirect=enabled -Dsgx=${SGX}
 RUN ninja -C build/
 RUN ninja -C build/ install
 
