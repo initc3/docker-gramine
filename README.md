@@ -18,7 +18,7 @@ You'll see something like:
 
 Alternatively, you can use https://github.com/ayeks/SGX-hardware#test-sgx.
 
-If your hardware supports SGX but it is no enabled, reboot your computer,
+If your hardware supports SGX but it is not enabled, reboot your computer,
 go into the BIOS settings, enable it, save and exit.
 
 ### SGX Driver
@@ -49,12 +49,14 @@ ls -la /dev/isgx
 ```
 
 ### Set `m.mmap_min_addr=0`
-**NOTE**: Only need for out-of-tree driver.
+**NOTE**: Only needed for out-of-tree driver.
 
-Why? See https://github.com/alibaba/inclavare-containers/blob/master/rune/libenclave/internal/runtime/pal/skeleton/README.md#enclave-null-dereference-protection.
 ```console
 sudo sysctl vm.mmap_min_addr=0
 ```
+
+Why?
+See https://github.com/alibaba/inclavare-containers/blob/master/rune/libenclave/internal/runtime/pal/skeleton/README.md#enclave-null-dereference-protection.
 
 ## Build
 Build:
