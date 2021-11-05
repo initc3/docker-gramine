@@ -1,6 +1,4 @@
-FROM ubuntu:20.04 as sgx-driver
-
-RUN apt-get update && apt-get install --yes git
+FROM alpine/git as sgx-driver
 
 RUN git clone \
             --branch sgx_diver_2.14 \
