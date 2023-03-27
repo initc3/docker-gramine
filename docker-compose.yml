@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   aesm:
-    image: initc3/linux-sgx:2.14-ubuntu20.04
+    image: initc3/linux-sgx:2.19-ubuntu22.04
     devices:
       - /dev/isgx
     volumes:
