@@ -5,7 +5,8 @@ RUN git clone \
             https://github.com/intel/linux-sgx-driver.git \
             /opt/intel/linux-sgx-driver
 
-FROM initc3/linux-sgx:2.14-ubuntu20.04
+#FROM initc3/linux-sgx:2.19-ubuntu22.04
+FROM python:3.10
 
 RUN apt-get update && apt-get install --yes \
             autoconf \
@@ -16,38 +17,76 @@ RUN apt-get update && apt-get install --yes \
             libcurl4-openssl-dev \
             libprotobuf-c-dev \
             libunwind-dev \
-            ninja-build \
+            nasm \
+            #ninja-build \
+            pkg-config \
+            protobuf-compiler \
             protobuf-c-compiler \
-            python3 \
-            python3-pip \
-            wget
+            vim \
+            wget \
+            libunwind8 \
+            musl-tools \
+        && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install click jinja2 'meson>=0.55' protobuf 'toml>=0.10'
+# to build the patched libgomp library
+RUN apt-get update && apt-get install --yes \
+            libgmp-dev \
+            libmpfr-dev \
+            libmpc-dev \
+            libisl-dev \
+        && rm -rf /var/lib/apt/lists/*
 
+RUN python -m pip install \
+            click \
+            cryptography \
+            jinja2 \
+            meson \
+            ninja \
+            protobuf \
+            pyelftools \
+            pytest \
+            toml \
+            tomli \
+            tomli-w
+
+ARG branch=master
+ARG remote=sbellem
 RUN git clone \
-            --branch v1.0 \
-            https://github.com/gramineproject/gramine.git \
+            --branch ${branch} \
+            https://github.com/${remote}/gramine.git \
             /usr/src/gramine
 
 WORKDIR /usr/src/gramine
 
+# https://gramine.readthedocs.io/en/stable/devel/building.html#install-the-intel-sgx-driver
 COPY --from=sgx-driver /opt/intel/linux-sgx-driver /opt/intel/linux-sgx-driver
+# NOTE that this is an inadvisable configuration for production systems.
+# RUN sysctl vm.mmap_min_addr=0
 
-RUN openssl genrsa -3 -out Pal/src/host/Linux-SGX/signer/enclave-key.pem 3072
-
+ARG buildtype=release
+ARG direct=enabled
+ARG sgx=enabled
+ARG sgx_driver=oot
 RUN meson setup build/ \
-            --buildtype=release \
-            -Ddirect=enabled \
-            -Dsgx=enabled \
-            -Dsgx_driver=oot \
+            --buildtype=${buildtype} \
+            -Ddirect=${direct} \
+            -Dsgx=${sgx} \
+            -Dsgx_driver=${sgx_driver} \
             -Dsgx_driver_include_path=/opt/intel/linux-sgx-driver
 
 RUN ninja -C build/
 RUN ninja -C build/ install
 
+#RUN gramine-sgx-gen-private-key
+RUN mkdir -p ${HOME}/.config/gramine \
+        && openssl genrsa -3 -out ${HOME}/.config/gramine/enclave-key.pem 3072
+
 # for the helloworld example
-WORKDIR /usr/src/gramine/LibOS/shim/test/regression
-RUN make SGX=1
+#WORKDIR /usr/src/gramine/LibOS/shim/test/regression
+#RUN make SGX=1
 #RUN make SGX=1 sgx-tokens
 
 WORKDIR /usr/src/gramine
+
+# workaround
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
