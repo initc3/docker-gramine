@@ -39,9 +39,9 @@ jobs:
           file: sgx.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          build-args: branch=${{ github.base_ref }}
+          build-args: branch=${{ github.ref_name }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.base_ref }},
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }},
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }},
           cache-from: type=registry,ref=initc3/gramine:buildcache
           cache-to: type=registry,ref=initc3/gramine:buildcache,mode=max
