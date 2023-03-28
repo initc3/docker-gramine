@@ -30,7 +30,7 @@ jobs:
           context: .
           file: sgx.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          build-args: branch=$GITHUB_BASE_REF
+          build-args: branch=${{ github.base_ref }}
           tags: |
-            ${{ env.IMAGE_NAME }}:$GITHUB_BASE_REF,
+            ${{ env.IMAGE_NAME }}:${{ github.base_ref }},
             ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }},
