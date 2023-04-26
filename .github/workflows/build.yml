@@ -10,7 +10,6 @@ jobs:
   just_build:
     runs-on: ubuntu-latest
     env:
-      REGISTRY: ghcr.io
       IMAGE_NAME: initc3/gramine
 
     steps:
@@ -25,12 +24,25 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       -
+        name: Build gramine for out-of-tree sgx driver (aka legacy)
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: sgx.Dockerfile
+          file: oot.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           build-args: branch=${{ github.base_ref }}
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ github.base_ref }},
-            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }},
+            ${{ env.IMAGE_NAME }}:legacy-${{ github.base_ref }},
+            ${{ env.IMAGE_NAME }}:legacy-${{ steps.vars.outputs.short_sha }},
+      -
+        name: Build gramine for in-kernel sgx driver (aka DCAP)
+        uses: docker/build-push-action@v4
+        with:
+          platforms: linux/amd64
+          context: .
+          file: dcap.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          build-args: branch=${{ github.base_ref }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:dcap-${{ github.base_ref }},
+            ${{ env.IMAGE_NAME }}:dcap-${{ steps.vars.outputs.short_sha }},
