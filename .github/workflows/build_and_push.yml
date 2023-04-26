@@ -32,16 +32,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build & push docker image for gramine
+        name: Build & push docker image for gramine with legacy sgx driver
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: sgx.Dockerfile
+          file: oot.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           build-args: branch=${{ github.ref_name }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }},
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }},
-          cache-from: type=registry,ref=initc3/gramine:buildcache
-          cache-to: type=registry,ref=initc3/gramine:buildcache,mode=max
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:legacy-${{ github.ref_name }},
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:legacy-${{ steps.vars.outputs.short_sha }},
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      -
+        name: Build & push docker image for gramine with in-kernel sgx driver (aka dcap)
+        uses: docker/build-push-action@v4
+        with:
+          platforms: linux/amd64
+          context: .
+          file: dcap.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          build-args: branch=${{ github.ref_name }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dcap-${{ github.ref_name }},
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dcap-${{ steps.vars.outputs.short_sha }},
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

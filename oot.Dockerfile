@@ -7,6 +7,9 @@ RUN git clone \
 
 #FROM initc3/linux-sgx:2.19-ubuntu22.04
 FROM python:3.10
+LABEL org.opencontainers.image.source=https://github.com/initc3/docker-gramine/tree/dev
+LABEL org.opencontainers.image.description="Gramine built with legacy sgx driver"
+LABEL org.opencontainers.image.licenses=GPL-3.0
 
 RUN apt-get update && apt-get install --yes \
             autoconf \
