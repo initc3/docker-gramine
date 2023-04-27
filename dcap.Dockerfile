@@ -23,7 +23,7 @@ RUN set -eux; \
 	rm ${deb_pkg}.tgz;
 
 
-FROM python:3.11.3-bullseye as base
+FROM python:3.10.11-bullseye as base
 LABEL org.opencontainers.image.source=https://github.com/initc3/docker-gramine/tree/dev
 LABEL org.opencontainers.image.description="Gramine built with in-kernel sgx driver"
 LABEL org.opencontainers.image.licenses=GPL-3.0
