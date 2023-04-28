@@ -6,27 +6,30 @@ on:
 
   workflow_dispatch:
 
-jobs:
-  just_build:
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: initc3/gramine
+defaults:
+  runs-on: ubuntu-latest
+  env:
+    IMAGE_NAME: initc3/gramine
+  steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Set Short SHA
+      id: vars
+      run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
+    -
+      name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
+jobs:
+  legacy:
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      -
-        name: Set Short SHA
-        id: vars
-        run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
       -
         name: Build gramine for out-of-tree sgx driver (aka legacy)
         uses: docker/build-push-action@v4
         with:
+          platforms: linux/amd64
           context: .
           file: oot.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
@@ -34,15 +37,35 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:legacy-${{ github.base_ref }},
             ${{ env.IMAGE_NAME }}:legacy-${{ steps.vars.outputs.short_sha }},
+  epid:
+    steps:
       -
-        name: Build gramine for in-kernel sgx driver (aka DCAP)
+        name: Build gramine for in-kernel sgx driver with epid remote attestation
         uses: docker/build-push-action@v4
         with:
           platforms: linux/amd64
           context: .
-          file: dcap.Dockerfile
+          file: inkernel.Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
-          build-args: branch=${{ github.base_ref }}
+          build-args: |
+            branch=${{ github.base_ref }}
+            dcap=disabled
+          tags: |
+            ${{ env.IMAGE_NAME }}:epid-${{ github.base_ref }},
+            ${{ env.IMAGE_NAME }}:epid-${{ steps.vars.outputs.short_sha }},
+  dcap:
+    steps:
+      -
+        name: Build gramine for in-kernel sgx driver with dcap remote attestation
+        uses: docker/build-push-action@v4
+        with:
+          platforms: linux/amd64
+          context: .
+          file: inkernel.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          build-args: |
+            branch=${{ github.base_ref }}
+            dcap=enabled
           tags: |
             ${{ env.IMAGE_NAME }}:dcap-${{ github.base_ref }},
             ${{ env.IMAGE_NAME }}:dcap-${{ steps.vars.outputs.short_sha }},
