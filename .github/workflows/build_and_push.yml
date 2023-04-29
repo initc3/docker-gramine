@@ -76,7 +76,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           build-args: |
-            branch=${{ github.base_ref }}
+            branch=${{ github.ref_name }}
             dcap=disabled
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:epid-${{ github.ref_name }},
@@ -113,7 +113,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           build-args: |
-            branch=${{ github.base_ref }}
+            branch=${{ github.ref_name }}
             dcap=enabled
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dcap-${{ github.ref_name }},
